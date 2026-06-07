@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kavach Dispatch Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0b0f1a;
+      --surface: #131929;
+      --card: #1a2236;
+      --border: #243050;
+      --accent: #2e7dff;
+      --accent2: #00d4aa;
+      --text: #e8edf5;
+      --muted: #7a8aaa;
+      --error: #ff4d6d;
+      --success: #00d4aa;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 16px 60px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(46,125,255,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(46,125,255,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(46,125,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 700px;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .header .badge {
+      display: inline-block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--accent);
+      border: 1px solid rgba(46,125,255,0.3);
+      padding: 4px 14px;
+      border-radius: 20px;
+      margin-bottom: 16px;
+      background: rgba(46,125,255,0.06);
+    }
+
+    .header h1 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(32px, 6vw, 52px);
+      font-weight: 700;
+      letter-spacing: 1px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #e8edf5 30%, #2e7dff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 15px;
+      font-weight: 300;
+    }
+
+    .search-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease 0.1s both;
+    }
+
+    .search-box label {
+      display: block;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 12px;
+    }
+
+    .search-box input {
+      flex: 1;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-box input::placeholder { color: var(--muted); }
+    .search-box input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(46,125,255,0.15);
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 14px 28px;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn:hover { background: #1a6be0; box-shadow: 0 4px 20px rgba(46,125,255,0.35); }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .msg {
+      text-align: center;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      margin-bottom: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+
+    .msg.error {
+      background: rgba(255,77,109,0.1);
+      border: 1px solid rgba(255,77,109,0.25);
+      color: var(--error);
+    }
+
+    .msg.loading {
+      background: rgba(46,125,255,0.08);
+      border: 1px solid rgba(46,125,255,0.2);
+      color: var(--accent);
+    }
+
+    .result-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .result-header {
+      background: linear-gradient(135deg, rgba(46,125,255,0.15), rgba(0,212,170,0.08));
+      border-bottom: 1px solid var(--border);
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .result-header .indent-id {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 1px;
+    }
+
+    .delivered-badge {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 5px 14px;
+      border-radius: 20px;
+    }
+
+    .delivered-badge.yes {
+      background: rgba(0,212,170,0.15);
+      border: 1px solid rgba(0,212,170,0.3);
+      color: var(--success);
+    }
+
+    .delivered-badge.no {
+      background: rgba(255,77,109,0.1);
+      border: 1px solid rgba(255,77,109,0.25);
+      color: var(--error);
+    }
+
+    .delivered-badge.unknown {
+      background: rgba(122,138,170,0.1);
+      border: 1px solid rgba(122,138,170,0.2);
+      color: var(--muted);
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .result-item {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+    }
+
+    .result-item:nth-child(even) { border-right: none; }
+    .result-item:nth-last-child(-n+2) { border-bottom: none; }
+    .result-item.full { grid-column: 1 / -1; border-right: none; }
+
+    .result-item .field-label {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .result-item .field-value {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .result-item .field-value.highlight {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent2);
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(46,125,255,0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .footer {
+      margin-top: 48px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 1px;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 480px) {
+      .result-grid { grid-template-columns: 1fr; }
+      .result-item { border-right: none !important; }
+      .result-item:last-child { border-bottom: none; }
+      .input-row { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+
+    <div class="header">
+      <div class="badge">Kavach Dispatch</div>
+      <h1>Shipment Tracker</h1>
+      <p>Enter an Indent Number to view courier details</p>
+    </div>
+
+    <div class="search-box">
+      <label>Indent Number</label>
+      <div class="input-row">
+        <input type="text" id="indentInput" placeholder="e.g. MP000268" />
+        <button class="btn" id="searchBtn" onclick="searchIndent()">Track</button>
+      </div>
+    </div>
+
+    <div id="msgBox"></div>
+    <div id="resultBox"></div>
+
+    <div class="footer">KAVACH DISPATCH TRACKER &nbsp;·&nbsp; INTERNAL USE ONLY</div>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbwUQAPq9PvdedTZaY_PnGK-0JF27Zds4LHuG3YjwUNscRSzHDDZaVsONbWlkHSFsw49/exec";
+
+    document.getElementById("indentInput").addEventListener("keydown", function(e) {
+      if (e.key === "Enter") searchIndent();
+    });
+
+    function showMsg(type, html) {
+      document.getElementById("msgBox").innerHTML = `<div class="msg ${type}">${html}</div>`;
+    }
+
+    function clearAll() {
+      document.getElementById("msgBox").innerHTML = "";
+      document.getElementById("resultBox").innerHTML = "";
+    }
+
+    function deliveredBadge(val) {
+      if (!val || val === "") return `<span class="delivered-badge unknown">Unknown</span>`;
+      const v = String(val).toLowerCase();
+      if (v === "yes" || v === "true" || v === "delivered" || v === "1") 
+        return `<span class="delivered-badge yes">✓ Delivered</span>`;
+      return `<span class="delivered-badge no">⏳ In Transit</span>`;
+    }
+
+    function formatDate(val) {
+      if (!val) return "—";
+      const d = new Date(val);
+      if (isNaN(d)) return val;
+      return d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    }
+
+    function capitalize(str) {
+      if (!str) return "—";
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    function searchIndent() {
+      const indent = document.getElementById("indentInput").value.trim();
+      if (!indent) {
+        showMsg("error", "⚠️ Please enter an Indent Number.");
+        return;
+      }
+
+      clearAll();
+      showMsg("loading", `<span class="spinner"></span> Fetching details for <strong>${indent}</strong>...`);
+      document.getElementById("searchBtn").disabled = true;
+
+      // Use JSONP to avoid CORS issues
+      const callbackName = "cb_" + Date.now();
+      const script = document.createElement("script");
+      const timeout = setTimeout(() => {
+        cleanup();
+        document.getElementById("searchBtn").disabled = false;
+        showMsg("error", "❌ Request timed out. Please try again.");
+      }, 10000);
+
+      function cleanup() {
+        clearTimeout(timeout);
+        delete window[callbackName];
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = function(json) {
+        cleanup();
+        document.getElementById("msgBox").innerHTML = "";
+        document.getElementById("searchBtn").disabled = false;
+
+        if (json.status === "not_found") {
+          showMsg("error", `❌ No record found for <strong>${indent}</strong>. Please check and try again.`);
+          return;
+        }
+
+        if (json.status === "error") {
+          showMsg("error", `❌ ${json.message}`);
+          return;
+        }
+
+        const d = json.data;
+        document.getElementById("resultBox").innerHTML = `
+          <div class="result-card">
+            <div class="result-header">
+              <div>
+                <div style="font-size:11px;letter-spacing:2px;color:var(--muted);font-family:'Rajdhani',sans-serif;margin-bottom:4px;">INDENT NUMBER</div>
+                <div class="indent-id">${d["Indent Number"] || indent}</div>
+              </div>
+              ${deliveredBadge(d["Delivered"])}
+            </div>
+            <div class="result-grid">
+              <div class="result-item">
+                <div class="field-label">Company Name</div>
+                <div class="field-value">${d["Company Name"] || "—"}</div>
+              </div>
+              <div class="result-item">
+                <div class="field-label">Dispatch Date</div>
+                <div class="field-value">${formatDate(d["Dispatch Date"])}</div>
+              </div>
+              <div class="result-item">
+                <div class="field-label">Courier Type</div>
+                <div class="field-value">${d["Courier Type"] || "—"}</div>
+              </div>
+              <div class="result-item">
+                <div class="field-label">Shipping City</div>
+                <div class="field-value">${capitalize(d["Shipping City"])}</div>
+              </div>
+              <div class="result-item full">
+                <div class="field-label">Docket Number</div>
+                <div class="field-value highlight">${d["Docket No"] || "—"}</div>
+              </div>
+            </div>
+          </div>`;
+      };
+
+      script.src = `${API_URL}?indent=${encodeURIComponent(indent)}&callback=${callbackName}`;
+      script.onerror = function() {
+        cleanup();
+        document.getElementById("searchBtn").disabled = false;
+        showMsg("error", "❌ Could not reach the server. Please check your internet connection.");
+      };
+      document.head.appendChild(script);
+    }
+  </script>
+</body>
+</html>
